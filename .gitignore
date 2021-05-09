@@ -1,0 +1,13 @@
+/BoardInfoVB2008/*.vbproj
+/BoardInfoVB2008/*.vbproj.user
+/BoardInfoVB2008/My Project/
+/BoardInfoVB2008/bin/
+/BoardInfoVB2008/Resources/
+/BoardInfoVB2008/obj/
+/BoardInfoVB2008/*.ico
+/BoardInfoVB2008/*.png
+/BoardInfoVB2008/*.gif
+/BoardInfoVB2008/*.jpg
+/BoardInfoVB2008/*.resx
+*.sln
+*.suo

@@ -1,0 +1,8 @@
+
+
+cd C:\Program Files\MySQL\MySQL Server 5.7\bin
+
+mysqldump -u root -pWelcome1 boardinfony > C:\Users\cvegabello\Documents\VisualStudio2008\Projects\BoardInfoVB2008\BackupDatabase\boardinfo_backup01072019.sql
+
+
+

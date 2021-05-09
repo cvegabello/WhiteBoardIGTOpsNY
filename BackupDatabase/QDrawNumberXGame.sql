@@ -1,0 +1,8 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `QDrawNumberXGame`(in CodProductSistema int)
+BEGIN
+
+SELECT PRODUCT_DAYSDRAW.CodDayWeekDraw
+FROM PRODUCT INNER JOIN PRODUCT_DAYSDRAW ON PRODUCT.IdProduct = PRODUCT_DAYSDRAW.CodProduct
+WHERE (((PRODUCT.productSysCode)=CodProductSistema));
+
+END
