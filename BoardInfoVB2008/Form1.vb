@@ -702,6 +702,7 @@ Public Class Form1
         Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle
         Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle
         Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle
+        Dim rowsNumberInt As Integer
 
         'Dim DataGridHeaderStyle1 As DataGridView = New DataGridViewTopLeftHeaderCell
 
@@ -713,16 +714,16 @@ Public Class Form1
         Column2 = dataGridROM.Columns(1)
         Column3 = dataGridROM.Columns(2)
 
-
-        For i = 0 To 15
-            dataGridROM.Rows(i).Height = 48
+        rowsNumberInt = dataGridROM.RowCount
+        For i = 0 To rowsNumberInt - 1
+            dataGridROM.Rows(i).Height = 40
         Next
 
         'APP NAME
         '
         DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle1.BackColor = Color.WhiteSmoke
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Calibri", 16.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Calibri", 15.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         DataGridViewCellStyle1.ForeColor = Drawing.Color.Black
         DataGridViewCellStyle1.SelectionBackColor = Color.WhiteSmoke
         DataGridViewCellStyle1.SelectionForeColor = Drawing.Color.Black
@@ -743,7 +744,7 @@ Public Class Form1
         ''
         DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle2.BackColor = Color.WhiteSmoke
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Calibri", 16.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Calibri", 15.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         DataGridViewCellStyle2.ForeColor = Drawing.Color.Black
         DataGridViewCellStyle2.SelectionBackColor = Color.WhiteSmoke
         DataGridViewCellStyle2.SelectionForeColor = Drawing.Color.Black
@@ -760,7 +761,7 @@ Public Class Form1
         ''
         DataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle3.BackColor = Color.WhiteSmoke
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Calibri", 16.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Calibri", 15.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         DataGridViewCellStyle3.ForeColor = Drawing.Color.Black
         DataGridViewCellStyle3.SelectionBackColor = Color.WhiteSmoke
         DataGridViewCellStyle3.SelectionForeColor = Drawing.Color.Black
