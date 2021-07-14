@@ -1343,11 +1343,11 @@ Partial Class Form1
         '
         Me.Label7.AutoSize = True
         Me.Label7.Font = New System.Drawing.Font("Calibri", 36.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(45, 39)
+        Me.Label7.Location = New System.Drawing.Point(22, 39)
         Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(147, 59)
+        Me.Label7.Size = New System.Drawing.Size(170, 59)
         Me.Label7.TabIndex = 13
-        Me.Label7.Text = "PPDB:"
+        Me.Label7.Text = "SPPDB:"
         '
         'Label6
         '

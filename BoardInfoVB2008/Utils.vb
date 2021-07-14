@@ -172,7 +172,7 @@ Module Utils
             nuevaFila = drawGamesTbl.NewRow()
             nuevaFila(0) = productSysNameStr
 
-            If (codSysProductInt = 9) Or (codSysProductInt = 14) Or (codSysProductInt = 22) Then
+            If (codSysProductInt = 9) Or (codSysProductInt = 14) Or (codSysProductInt = 22) Or (codSysProductInt = 10) Then
                 nuevaFila(1) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 1)
                 nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 2)
             Else
@@ -477,7 +477,7 @@ Module Utils
         'Dim firstDrawKenoDbl As Double
 
         num1 = convertDateInt(toKnowDate)
-        'num1 = convertDateInt("7/1/2019")
+        'num1 = convertDateInt("7/15/2021")
         dayWeekInt = Weekday(toKnowDate)
         'indexFirstDrawKenoDbl = Utils.GetSetting(appName, "FirstDrawKeno", "").ToString()
 
@@ -529,8 +529,14 @@ Module Utils
                         num3 = (((2 * num1) - 69216) + 1)
                 End Select
 
-            Case 10
-                num3 = (num1 - 35525)
+            Case 10 'csh5
+
+                Select Case dayDraw
+                    Case 1 'Midday
+                        num3 = ((2 * num1) - 79916)
+                    Case 2 'Evenning
+                        num3 = (((2 * num1) - 79916) + 1)
+                End Select
 
             Case 11
 
@@ -640,6 +646,7 @@ Module Utils
         Dim strLinea As String
         Dim strFile, drawNumberStr, strValor, drawNumberPrevStr, strFileOld, strFilePath As String
         Dim winnerStr As String = ""
+        Dim winnerTake5() As String = {"", ""}
         Dim drawNumberInt As Integer
 
         drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
@@ -653,41 +660,50 @@ Module Utils
 
         Select Case codSysProduct
             Case 10 'CSH5
-                drawNumberStr = drawNumberStr.PadLeft(6, "0")
-                drawNumberPrevStr = drawNumberPrevStr.PadLeft(6, "0")
+                For i = 1 To 2
 
-                strFileOld = strFilePath & "\winner_summary_report_p010_d" & drawNumberPrevStr & "_wincnt_english.rep"
-                Try
-                    FileSystem.Kill(strFileOld)
-                Catch ex As Exception
+                    drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, i)
+                    drawNumberInt -= 1
+                    drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+                    drawNumberStr = Trim(Str(drawNumberInt))
+                    strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+                    ChDir(strFilePath)
+                    drawNumberStr = drawNumberStr.PadLeft(6, "0")
+                    drawNumberPrevStr = drawNumberPrevStr.PadLeft(6, "0")
 
-                End Try
+                    strFileOld = strFilePath & "\winner_summary_report_p010_d" & drawNumberPrevStr & "_wincnt_english.rep"
+                    Try
+                        FileSystem.Kill(strFileOld)
+                    Catch ex As Exception
 
-                strFile = strFilePath & "\winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep"
+                    End Try
 
-                Try
-                    reader1 = New StreamReader(strFile, Encoding.UTF7)
-                    strLinea = ""
+                    strFile = strFilePath & "\winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep"
 
-                    Do While Not (strLinea Is Nothing)
-                        strLinea = reader1.ReadLine()
-                        strValor = Mid(strLinea, 3, 3)
-                        If strValor = "5/5" Then
-                            winnerStr = Mid(strLinea, 25, 6)
-                            Exit Do
-                        End If
+                    Try
+                        reader1 = New StreamReader(strFile, Encoding.UTF7)
+                        strLinea = ""
 
-                    Loop
-                    reader1.Close()
-                Catch ex As Exception
+                        Do While Not (strLinea Is Nothing)
+                            strLinea = reader1.ReadLine()
+                            strValor = Mid(strLinea, 3, 3)
+                            If strValor = "5/5" Then
+                                winnerTake5(i) = Mid(strLinea, 25, 6)
+                                Exit Do
+                            End If
 
-                    errorCode = -1
-                    errorMessage = "The file TAKE5 WINNER SUMMARY -winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep-, is not in " & strFilePath
-                    winnerStr = "0"
+                        Loop
+                        reader1.Close()
+                    Catch ex As Exception
 
-                End Try
+                        'errorCode = -1
+                        errorMessage = "The file TAKE5 WINNER SUMMARY -winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep-, is not in " & strFilePath
+                        winnerTake5(i) = "X"
 
+                    End Try
 
+                Next
+                winnerStr = winnerTake5(1) & " - " & winnerTake5(2)
 
             Case 8 'LOTTO
                 drawNumberStr = drawNumberStr.PadLeft(6, "0")
