@@ -159,8 +159,9 @@ Module Utils
         Dim productSysNameStr As String
         Dim drawGamesTbl As New DataTable("DRAWSGAMES")
         Dim nuevaFila As DataRow
+        Dim cdcInt As Integer
 
-        'cdcInt = returnCDC(toKnowDate)
+        cdcInt = returnCDC(toKnowDate)
         drawGamesTbl = Utils.Despliegue
         tableQproducts = dataSourceAccess.RunStoreQueryWithoutParameters("qproducts")
 
@@ -172,13 +173,28 @@ Module Utils
             nuevaFila = drawGamesTbl.NewRow()
             nuevaFila(0) = productSysNameStr
 
-            If (codSysProductInt = 9) Or (codSysProductInt = 14) Or (codSysProductInt = 22) Or (codSysProductInt = 10) Then
-                nuevaFila(1) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 1)
-                nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 2)
+
+            If cdcInt < 12991 Then
+
+                If (codSysProductInt = 9) Or (codSysProductInt = 14) Or (codSysProductInt = 22) Then
+                    nuevaFila(1) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 1)
+                    nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 2)
+                Else
+                    nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 0)
+                End If
+                drawGamesTbl.Rows.Add(nuevaFila)
             Else
-                nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 0)
+                If (codSysProductInt = 9) Or (codSysProductInt = 14) Or (codSysProductInt = 22) Or (codSysProductInt = 10) Then
+                    nuevaFila(1) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 1)
+                    nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 2)
+                Else
+                    nuevaFila(2) = getDrawNumberXProductXday(codSysProductInt, toKnowDate, 0)
+                End If
+                drawGamesTbl.Rows.Add(nuevaFila)
+
+
             End If
-            drawGamesTbl.Rows.Add(nuevaFila)
+
         Next
         Return drawGamesTbl
 
@@ -276,7 +292,7 @@ Module Utils
         'Dim resBool As Boolean
         Dim draw(3) As String
 
-
+        cdcInt = returnCDC(toKnowDate)
         tableQproducts = dataSourceAccess.RunStoreQueryWithoutParameters("QProductsWinners")
 
         For Each row1 In tableQproducts.Rows
@@ -288,13 +304,37 @@ Module Utils
             Else
                 oldJackPotDbl = row1("currentJackpot")
             End If
+            nameDayWeekStr = WeekdayName(Weekday(toKnowDate.AddDays(-1)))
 
+            If productSysCodeInt = 10 Then
 
-            If IsDrawDay(productSysCodeInt, toKnowDate) Or (productSysCodeInt = 13) Then 'Despues del 1 de julio se puede quitar la segunda parte del Or
+                If cdcInt < 12991 Then
+                    drawNumberInt = getDrawNumberXProductXday(productSysCodeInt, toKnowDate, 0)
+                    drawNumberInt -= 1
+                Else
+                    drawNumberInt = getDrawNumberXProductXday(productSysCodeInt, toKnowDate, 1)
+                    drawNumberInt -= 2
+                End If
+
+                'drawNumberInt -= 2
+                'cdcInt = returnCDC(toKnowDate)
+                cdcInt -= 1
+                numWinnerStr = Trim(getWinnersXProduct(toKnowDate, productSysCodeInt, errCodeInt, errMessageStr))
+                msgErrorStr = ""
+                errCodInt = deleteHistoryDaily(idProductInt, cdcInt, msgErrorStr)
+                If errCodInt = 0 Then
+                    saveHistoryDaily(drawNumberInt, cdcInt, productSysNameStr, idProductInt, numWinnerStr, oldJackPotDbl, nameDayWeekStr)
+                Else
+                    MsgBox("Error in delete HistoryDaily: " & msgErrorStr, MsgBoxStyle.Critical, "Error")
+                End If
+
+            End If
+
+            If IsDrawDay(productSysCodeInt, toKnowDate) And (productSysCodeInt <> 10) Then
                 errCodeInt = 0
                 errMessageStr = ""
                 numWinnerStr = Trim(getWinnersXProduct(toKnowDate, productSysCodeInt, errCodeInt, errMessageStr))
-                nameDayWeekStr = WeekdayName(Weekday(toKnowDate.AddDays(-1)))
+                'nameDayWeekStr = WeekdayName(Weekday(toKnowDate.AddDays(-1)))
                 If errCodeInt = 0 Then
                     drawNumberInt = getDrawNumberXProductXday(productSysCodeInt, toKnowDate, 0)
                     drawNumberInt -= 1
@@ -372,22 +412,127 @@ Module Utils
 
                     'newJackPotDbl = leerJackpotFromPaginaWeb("http://www.lotteryusa.com/lottery/NY/NY_fcur.html", productSysCodeInt)
                 Else
-                    If numWinnerStr = "-" Then
-                        msgErrorStr = ""
-                        errCodInt = deleteHistoryDaily(idProductInt, cdcInt, msgErrorStr)
-                        If errCodInt = 0 Then
-                            saveHistoryDaily(0, cdcInt, productSysNameStr, idProductInt, numWinnerStr, 0, nameDayWeekStr)
-                        Else
-                            MsgBox("Error in delete HistoryDaily: " & msgErrorStr, MsgBoxStyle.Critical, "Error")
-                        End If
+                    'If numWinnerStr = "-" Then
+                    '    msgErrorStr = ""
+                    '    errCodInt = deleteHistoryDaily(idProductInt, cdcInt, msgErrorStr)
+                    '    If errCodInt = 0 Then
+                    '        saveHistoryDaily(0, cdcInt, productSysNameStr, idProductInt, numWinnerStr, 0, nameDayWeekStr)
+                    '    Else
+                    '        MsgBox("Error in delete HistoryDaily: " & msgErrorStr, MsgBoxStyle.Critical, "Error")
+                    '    End If
 
-                    Else
-                        Exit Sub
-                    End If
+                    'Else
+                    '    Exit Sub
+                    'End If
 
 
                 End If
             End If
+
+
+
+
+
+
+            '    End If
+
+            '    errCodeInt = 0
+            '    errMessageStr = ""
+            '    numWinnerStr = Trim(getWinnersXProduct(toKnowDate, productSysCodeInt, errCodeInt, errMessageStr))
+            '    'nameDayWeekStr = WeekdayName(Weekday(toKnowDate.AddDays(-1)))
+            '    If errCodeInt = 0 Then
+            '        drawNumberInt = getDrawNumberXProductXday(productSysCodeInt, toKnowDate, 0)
+            '        drawNumberInt -= 1
+            '        cdcInt = returnCDC(toKnowDate)
+            '        cdcInt -= 1
+
+            '        stateCodInt = 35
+            '        numWinnersInt = CInt(numWinnerStr)
+            '        If numWinnersInt > 0 Then
+            '            parameters1(0) = New MySql.Data.MySqlClient.MySqlParameter("@codproduct", idProductInt)
+            '            parameters1(1) = New MySql.Data.MySqlClient.MySqlParameter("@cdc", cdcInt)
+            '            parameters1(2) = New MySql.Data.MySqlClient.MySqlParameter("@codstate", stateCodInt)
+            '            parameters1(3) = New MySql.Data.MySqlClient.MySqlParameter("@numwinners", numWinnersInt)
+            '            parameters1(4) = New MySql.Data.MySqlClient.MySqlParameter("@dateTimeInsert", Now)
+            '            msgErrorStr = ""
+            '            dataSourceAccess.RunStoreProcedureParametersNonQuery("insertWinnnerXstate", parameters1, msgErrorStr)
+            '        End If
+
+            '        parameters2(0) = New MySql.Data.MySqlClient.MySqlParameter("@codproduct", idProductInt)
+            '        parameters2(1) = New MySql.Data.MySqlClient.MySqlParameter("@cdc", cdcInt)
+            '        table1 = dataSourceAccess.RunStructureProcedureReturnDtable("returnTotalWinners", parameters2)
+            '        numrecordsInt = table1.Rows.Count
+
+            '        If numrecordsInt = 0 Then
+            '            numWinnerStr = "0"
+            '        Else
+            '            numWinnerStr = CStr(table1.Rows(0).Item(2))
+            '        End If
+
+            '        If productSysCodeInt = 8 Or productSysCodeInt = 12 Or productSysCodeInt = 15 Then
+
+            '            newJackPotDbl = readJackpotFromFile(productSysCodeInt, toKnowDate, errCodeInt, errMessageStr)
+            '            If errCodeInt = 0 Then
+            '                If (newJackPotDbl <> oldJackPotDbl) And (newJackPotDbl <> 0) Then
+            '                    msgErrorStr = ""
+            '                    errCodInt = deleteHistoryDaily(idProductInt, cdcInt, msgErrorStr)
+            '                    If errCodInt = 0 Then
+            '                        saveHistoryDaily(drawNumberInt, cdcInt, productSysNameStr, idProductInt, numWinnerStr, oldJackPotDbl, nameDayWeekStr)
+            '                        updateJackPot(productSysCodeInt, newJackPotDbl)
+            '                    Else
+            '                        MsgBox("Error in delete HistoryDaily: " & msgErrorStr, MsgBoxStyle.Critical, "Error")
+            '                    End If
+            '                ElseIf newJackPotDbl = 0 Then
+            '                    Select Case productSysCodeInt
+            '                        Case 8
+            '                            Form1.Button3.Text = "PENDING"
+            '                            flagJackpotPendingArray(0) = "LOTO_PENDING"
+
+            '                        Case 12
+            '                            Form1.Button2.Text = "PENDING"
+            '                            flagJackpotPendingArray(1) = "BIGG_PENDING"
+
+            '                        Case 15
+            '                            Form1.Button4.Text = "PENDING"
+            '                            flagJackpotPendingArray(2) = "PWRB_PENDING"
+
+
+            '                    End Select
+
+            '                End If
+            '            Else
+            '                MsgBox("Error reading Jackpot File: " & errMessageStr, MsgBoxStyle.OkOnly, "Error")
+            '            End If
+            '        Else
+            '            'newJackPotDbl = 0
+            '            msgErrorStr = ""
+            '            errCodInt = deleteHistoryDaily(idProductInt, cdcInt, msgErrorStr)
+            '            If errCodInt = 0 Then
+            '                saveHistoryDaily(drawNumberInt, cdcInt, productSysNameStr, idProductInt, numWinnerStr, oldJackPotDbl, nameDayWeekStr)
+            '            Else
+            '                MsgBox("Error in delete HistoryDaily: " & msgErrorStr, MsgBoxStyle.Critical, "Error")
+            '            End If
+
+            '        End If
+
+            '        'newJackPotDbl = leerJackpotFromPaginaWeb("http://www.lotteryusa.com/lottery/NY/NY_fcur.html", productSysCodeInt)
+            '    Else
+            '        'If numWinnerStr = "-" Then
+            '        '    msgErrorStr = ""
+            '        '    errCodInt = deleteHistoryDaily(idProductInt, cdcInt, msgErrorStr)
+            '        '    If errCodInt = 0 Then
+            '        '        saveHistoryDaily(0, cdcInt, productSysNameStr, idProductInt, numWinnerStr, 0, nameDayWeekStr)
+            '        '    Else
+            '        '        MsgBox("Error in delete HistoryDaily: " & msgErrorStr, MsgBoxStyle.Critical, "Error")
+            '        '    End If
+
+            '        'Else
+            '        '    Exit Sub
+            '        'End If
+
+
+            '    End If
+            'End If
         Next
 
 
@@ -477,6 +622,9 @@ Module Utils
         'Dim firstDrawKenoDbl As Double
 
         num1 = convertDateInt(toKnowDate)
+        cdcInt = returnCDC(toKnowDate)
+        'cdcInt = 12991
+
         'num1 = convertDateInt("7/15/2021")
         dayWeekInt = Weekday(toKnowDate)
         'indexFirstDrawKenoDbl = Utils.GetSetting(appName, "FirstDrawKeno", "").ToString()
@@ -529,13 +677,16 @@ Module Utils
                         num3 = (((2 * num1) - 69216) + 1)
                 End Select
 
-            Case 10 'csh5
-
+            Case 10 'csh5 TAKE5
+                
                 Select Case dayDraw
+                    Case 0 'BEFORE CDC 12991
+                        num3 = cdcInt - 4113
                     Case 1 'Midday
-                        num3 = ((2 * num1) - 79916)
+                        num3 = ((2 * cdcInt) - 17104)
+
                     Case 2 'Evenning
-                        num3 = (((2 * num1) - 79916) + 1)
+                        num3 = (((2 * cdcInt) - 17104) + 1)
                 End Select
 
             Case 11
@@ -647,22 +798,22 @@ Module Utils
         Dim strFile, drawNumberStr, strValor, drawNumberPrevStr, strFileOld, strFilePath As String
         Dim winnerStr As String = ""
         Dim winnerTake5() As String = {"", ""}
-        Dim drawNumberInt As Integer
+        Dim drawNumberInt, cdcInt As Integer
 
-        drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
-        drawNumberInt -= 1
-        drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
-        drawNumberStr = Trim(Str(drawNumberInt))
-        strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+        'drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
+        'drawNumberInt -= 1
+        'drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+        'drawNumberStr = Trim(Str(drawNumberInt))
+        'strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+        'ChDir(strFilePath)
 
-        'strFile = Application.StartupPath
-        ChDir(strFilePath)
+        cdcInt = returnCDC(toKnowDate)
 
         Select Case codSysProduct
             Case 10 'CSH5
-                For i = 1 To 2
 
-                    drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, i)
+                If cdcInt < 12991 Then
+                    drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
                     drawNumberInt -= 1
                     drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
                     drawNumberStr = Trim(Str(drawNumberInt))
@@ -688,24 +839,77 @@ Module Utils
                             strLinea = reader1.ReadLine()
                             strValor = Mid(strLinea, 3, 3)
                             If strValor = "5/5" Then
-                                winnerTake5(i) = Mid(strLinea, 25, 6)
+                                winnerTake5(0) = "X"
+                                winnerTake5(1) = Trim(Mid(strLinea, 25, 6))
                                 Exit Do
                             End If
 
                         Loop
                         reader1.Close()
                     Catch ex As Exception
-
-                        'errorCode = -1
+                        errorCode = -1
                         errorMessage = "The file TAKE5 WINNER SUMMARY -winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep-, is not in " & strFilePath
-                        winnerTake5(i) = "X"
+                        winnerTake5(0) = "X"
+                        winnerTake5(1) = "X"
 
                     End Try
 
-                Next
-                winnerStr = winnerTake5(1) & " - " & winnerTake5(2)
+                Else
+                    For i = 0 To 1
+
+                        drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, i + 1)
+                        drawNumberInt -= 2
+                        drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+                        drawNumberStr = Trim(Str(drawNumberInt))
+                        strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+                        ChDir(strFilePath)
+                        drawNumberStr = drawNumberStr.PadLeft(6, "0")
+                        drawNumberPrevStr = drawNumberPrevStr.PadLeft(6, "0")
+
+                        strFileOld = strFilePath & "\winner_summary_report_p010_d" & drawNumberPrevStr & "_wincnt_english.rep"
+                        Try
+                            FileSystem.Kill(strFileOld)
+                        Catch ex As Exception
+
+                        End Try
+
+                        strFile = strFilePath & "\winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep"
+
+                        Try
+                            reader1 = New StreamReader(strFile, Encoding.UTF7)
+                            strLinea = ""
+
+                            Do While Not (strLinea Is Nothing)
+                                strLinea = reader1.ReadLine()
+                                strValor = Mid(strLinea, 3, 3)
+                                If strValor = "5/5" Then
+                                    winnerTake5(i) = Trim(Mid(strLinea, 25, 6))
+                                    Exit Do
+                                End If
+
+                            Loop
+                            reader1.Close()
+                        Catch ex As Exception
+                            errorCode = -1
+                            errorMessage = "The file TAKE5 WINNER SUMMARY -winner_summary_report_p010_d" & drawNumberStr & "_wincnt_english.rep-, is not in " & strFilePath
+                            winnerTake5(i) = "X"
+
+                        End Try
+
+                    Next
+
+                End If
+                winnerStr = winnerTake5(0) & " - " & winnerTake5(1)
 
             Case 8 'LOTTO
+
+                drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
+                drawNumberInt -= 1
+                drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+                drawNumberStr = Trim(Str(drawNumberInt))
+                strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+                ChDir(strFilePath)
+
                 drawNumberStr = drawNumberStr.PadLeft(6, "0")
                 drawNumberPrevStr = drawNumberPrevStr.PadLeft(6, "0")
 
@@ -743,6 +947,15 @@ Module Utils
 
 
             Case 12 'BIGG
+
+                drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
+                drawNumberInt -= 1
+                drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+                drawNumberStr = Trim(Str(drawNumberInt))
+                strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+                ChDir(strFilePath)
+
+
                 drawNumberStr = drawNumberStr.PadLeft(4, "0")
                 drawNumberPrevStr = drawNumberPrevStr.PadLeft(4, "0")
 
@@ -774,6 +987,13 @@ Module Utils
 
 
             Case 15 'PWRB
+
+                drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
+                drawNumberInt -= 1
+                drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+                drawNumberStr = Trim(Str(drawNumberInt))
+                strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+                ChDir(strFilePath)
                 drawNumberStr = drawNumberStr.PadLeft(4, "0")
                 drawNumberPrevStr = drawNumberPrevStr.PadLeft(4, "0")
 
@@ -807,6 +1027,14 @@ Module Utils
 
 
             Case 13 'LIFE
+
+                drawNumberInt = Utils.getDrawNumberXProductXday(codSysProduct, toKnowDate, 0)
+                drawNumberInt -= 1
+                drawNumberPrevStr = Trim(Str(drawNumberInt - 1))
+                drawNumberStr = Trim(Str(drawNumberInt))
+                strFilePath = Utils.GetSetting(appName, "UbiWinFileLocation", "").ToString()
+                ChDir(strFilePath)
+
                 drawNumberStr = drawNumberStr.PadLeft(4, "0")
                 drawNumberPrevStr = drawNumberPrevStr.PadLeft(4, "0")
 
